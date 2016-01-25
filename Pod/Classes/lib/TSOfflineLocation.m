@@ -67,12 +67,17 @@
         location.timeZone = nil;
     }
     
+    if([dic objectForKey:@"geonameid"] != nil && ![[dic objectForKey:@"geonameid"] isEqual:[NSNull null]]){
+        location.geonameid = [dic objectForKey:@"geonameid"];
+    }else{
+        location.geonameid = @"0";
+    }
     
     return location;
 }
 
 + (instancetype) objectWithPlacemark:(CLPlacemark *)placemark{
-
+    
     TSOfflineLocation *location = [[TSOfflineLocation alloc] init];
     
     if (CLLocationCoordinate2DIsValid(placemark.location.coordinate)) {
@@ -92,6 +97,7 @@
     location.population = 0;
     location.countryCode = placemark.ISOcountryCode;
     location.altCountryCode = @"";
+    location.geonameid = @"0";
     
     return location;
 }
@@ -99,7 +105,7 @@
 #pragma mark - NSObject
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-
+    
     NSNumber *lat = [NSNumber numberWithDouble:self.coordinates.latitude];
     NSNumber *lon = [NSNumber numberWithDouble:self.coordinates.longitude];
     NSDictionary *coordinatesDic = @{@"lat":lat,@"lon":lon};
@@ -113,6 +119,7 @@
     [encoder encodeObject:self.altCountryCode forKey:@"altCountryCode"];
     [encoder encodeObject:self.timeZone forKey:@"timeZone"];
     [encoder encodeObject:@(self.isCurrentLocation) forKey:@"isCurrentLocation"];
+    [encoder encodeObject:self.geonameid forKey:@"geonameid"];
 }
 
 - (id)initWithCoder:(NSCoder *)decoder {
@@ -130,6 +137,7 @@
         self.altCountryCode = [decoder decodeObjectForKey:@"altCountryCode"];
         self.timeZone = [decoder decodeObjectForKey:@"timeZone"];
         self.isCurrentLocation = [[decoder decodeObjectForKey:@"isCurrentLocation"] boolValue];
+        self.geonameid = [decoder decodeObjectForKey:@"geonameid"];
     }
     return self;
 }
@@ -146,11 +154,12 @@
     location.altCountryCode = self.altCountryCode;
     location.timeZone = self.timeZone;
     location.isCurrentLocation = self.isCurrentLocation;
+    location.geonameid = self.geonameid;
     return location;
 }
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"- TSOfflineLocation - \nname: %@, \ncoordinates: (%f, %f), \ntimezone: %@", self.displayName, self.coordinates.latitude, self.coordinates.longitude, timeZone.description];
+    return [NSString stringWithFormat:@"- TSOfflineLocation - \nname: %@, \ncoordinates: (%f, %f), \ntimezone: %@, \ngeonameid: %@", self.displayName, self.coordinates.latitude, self.coordinates.longitude, timeZone.description, self.geonameid];
 }
 
 - (BOOL) isEqualToLocation:(TSOfflineLocation*)location {
@@ -168,8 +177,9 @@
     BOOL haveEqualAltCountryCode = (!self.altCountryCode && !location.altCountryCode) || ([self.altCountryCode isEqualToString:location.altCountryCode]);
     BOOL haveEqualTimeZone = (!self.timeZone && !location.timeZone) || ([self.timeZone isEqualToTimeZone:location.timeZone]);
     BOOL haveEqualIsCurrentLocation = (self.isCurrentLocation == location.isCurrentLocation);
+    BOOL haveEqualGeonameid = (!self.geonameid && !location.geonameid) || ([self.geonameid isEqualToString:location.geonameid]);
     
-    return haveEqualCoordinates && haveEqualName && haveEqualDisplayName && haveEqualAltNames && haveEqualPopulation && haveEqualCountryCode && haveEqualAltCountryCode && haveEqualTimeZone && haveEqualIsCurrentLocation;
+    return haveEqualCoordinates && haveEqualName && haveEqualDisplayName && haveEqualAltNames && haveEqualPopulation && haveEqualCountryCode && haveEqualAltCountryCode && haveEqualTimeZone && haveEqualIsCurrentLocation && haveEqualGeonameid;
 }
 
 @end
